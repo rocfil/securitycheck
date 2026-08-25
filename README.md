@@ -32,5 +32,5 @@ A lightweight, native PowerShell script designed to automate basic security post
 ```
 
 ## Value and Use Case
-* **IT Support: Rapidly audit workstation hygiene during routine maintenance or onboarding/offboarding.
-* **Security Operations: Acts as a lightweight local sensor baseline for endpoints prior to deploying full SIEM agents.
+* IT Support: Rapidly audit workstation hygiene during routine maintenance or onboarding/offboarding.
+* Security Operations: Acts as a lightweight local sensor baseline for endpoints prior to deploying full SIEM agents.
