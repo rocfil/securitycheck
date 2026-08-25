@@ -1,19 +1,58 @@
-# storing data into variables
-$firewall = Get-NetFirewallProfile | Select-Object Name, Enabled
-$users = Get-LocalUser | Where-Object { $_.Enabled -eq $true } | Select-Object Name, Enabled, LastLogon
-$antivirus = Get-MpComputerStatus | Select-Object RealTimeProtectionEnabled, AntivirusSignatureAge
+# ---------------------------------------------------------
+# Local System Security & Compliance Audit Script
+# Target: Windows Systems
+# ---------------------------------------------------------
 
-# Header Display
-Write-Host "===============================" -ForegroundColor Cyan
-Write-Host "    SECURITY AUDITING REPORT   " -ForegroundColor Cyan
-Write-Host "===============================" -ForegroundColor Cyan
+# Setting log output location
+$logFile = "$PSScriptRoot\SecurityAuditReport.txt"
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 
-# Results display
-Write-Host "`n[1. FIREWALL STATUS]" -ForegroundColor Yellow
-$firewall | Format-Table -AutoSize
+# Fetch system configurations
+$firewallProfiles = Get-NetFirewallProfile | Select-Object Name, Enabled
+$activeUsers      = Get-LocalUser | Where-Object { $_.Enabled -eq $true } | Select-Object Name, Enabled, LastLogon
+$antivirusStatus  = Get-MpComputerStatus | Select-Object RealTimeProtectionEnabled, AntivirusSignatureAge
 
-Write-Host "[2.ACTIVE LOCAL USERS]" -ForegroundColor Yellow
-$users | Format-Table -AutoSize
+# Printing Report Header
+$reportContent = @"
+==================================================
+        LOCAL SECURITY AUDIT REPORT
+        Timestamp: $timestamp
+==================================================
 
-Write-Host "[3. DEFENDER STATUS]" -ForegroundColor Yellow
-$antivirus | Format-Table -AutoSize
+"@
+
+# [SECTION 1] Firewall Verification
+$reportContent += "`n[1. FIREWALL STATUS]`n"
+foreach ($profile in $firewallProfiles) {
+    if ($profile.Enabled -eq $true) {
+        $reportContent += " [OK] Profile '$($profile.Name)': Enabled`n"
+    } else {
+        $reportContent += " [CRITICAL ALERT] Profile '$($profile.Name)': DISABLED!`n"
+    }
+}
+
+# [SECTION 2] Antivirus Health Check
+$reportContent += "`n[2. ANTIVIRUS STATUS]`n"
+if ($antivirusStatus.RealTimeProtectionEnabled -eq $true) {
+    $reportContent += "`n[OK] Real-time protection is ACTIVE.`n"
+} else {
+    $reportContent += "`n[CRITICAL ALERT] Real-time protection is DISABLED.`n"
+}
+
+if ($antivirusStatus.AntivirusSignatureAge -le 2) {
+    $reportContent += "`n[OK] Virus definitions are up to date ($($antivirusStatus.AntivirusSignatureAge) days old)`n"
+} else {
+    $reportContent += "`n[WARNING] Virus definitions are out of date ($($antivirusStatus.AntivirusSignatureAge) days old)!`n"
+}
+
+# [SECTION 3] Active Local Accounts
+$reportContent += "`n[3. ACTIVE LOCAL ACCOUNTS]`n"
+foreach ($user in $activeUsers) {
+    $reportContent += " - Account: $($user.Name) | Last Logon: $($user.LastLogon)`n"
+}
+
+#Display Report on Screen and save to file .txt
+Write-Host $reportContent -ForegroundColor Cyan
+$reportContent | Out-File -FilePath $logFile -Encoding utf8
+
+Write-Host "`n Report successfully saved to: $logFile`n" -ForegroundColor Green
