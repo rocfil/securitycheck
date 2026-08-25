@@ -29,3 +29,8 @@ A lightweight, native PowerShell script designed to automate basic security post
 [3. ACTIVE LOCAL ACCOUNTS]
  - Account: Administrator | Last Logon: 2026-08-15 09:12:33
  - Account: LocalAdmin | Last Logon: 2026-08-20 11:04:12
+```
+
+## Value and Use Case
+* **IT Support: Rapidly audit workstation hygiene during routine maintenance or onboarding/offboarding.
+* **Security Operations: Acts as a lightweight local sensor baseline for endpoints prior to deploying full SIEM agents.
